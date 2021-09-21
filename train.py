@@ -6,15 +6,15 @@ import torchvision.transforms as transforms
 import torch.nn as nn
 import os
 
-DATASET_DIR = './data/'  # 数据集路径
-MODEL_DIR = './model/'  # 模型参数保存位置
+DATASET_DIR = './data'  # 数据集路径
+MODEL_DIR = './model'  # 模型参数保存位置
 WORKERS = 10  # PyTorch 读取数据线程数量
 BATCH_SIZE = 16
 LR = 0.001
 EPOCH = 10
-IMAGE_SIZE = 200  # 默认输入网络的图片大小
+IMAGE_SIZE = 224  # 默认输入网络的图片大小
 
-os.environ["CUDA_VISIBLE_DEVICES"]=0
+os.environ["CUDA_VISIBLE_DEVICES"] = 0
 
 transform_train = transforms.Compose([
     transforms.Resize((256, 256)),
