@@ -1,4 +1,4 @@
-from getdata import CatAndDogDataset
+from get_data import CatAndDogDataset
 from network import Net
 import torch.utils.data
 import torch
@@ -48,13 +48,14 @@ def train(epoch):
     print('\nEpoch: %d' % epoch)
     # 读取数据集中数据进行训练，因为 dataloader 的 batch_size 设置为16，所以每次读取的数据量为16，即 img 包含了16个图像，label 有16个
     for idx, (img, label) in enumerate(train_loader):  # 循环读取封装后的数据集，其实就是调用了数据集中的__getitem__()方法，只是返回数据格式进行了一次封装
-        img, label = Variable(img).to(device), Variable(label).to(device)  # 将数据放置在 PyTorch 的 Variable 节点中，并送入 GPU 中作为网络计算起点
+        img, label = Variable(img).to(device), Variable(label).to(
+            device)  # 将数据放置在 PyTorch 的 Variable 节点中，并送入 GPU 中作为网络计算起点
         out = model(img)  # 计算网络输出值，就是输入网络一个图像数据，输出猫和狗的概率，调用了网络中的 forward() 方法
         loss = criterion(out,
                          label.squeeze())  # 计算损失，也就是网络输出值和实际 label 的差异，显然差异越小说明网络拟合效果越好，此处需要注意的是第二个参数，必须是一个1维 Tensor
         loss.backward()  # 误差反向传播，采用求导的方式，计算网络中每个节点参数的梯度，显然梯度越大说明参数设置不合理，需要调整
         optimizer.step()  # 优化采用设定的优化方法对网络中的各个参数进行调整
-        optimizer.zero_grad()  # 清除优化器中的梯度以便下一次计算，因为优化器默认会保留，不清除的话，每次计算梯度都会累加
+        optimizer.zero_grad()  # 清除优化器中的梯度以便下一次计算，因为优化器默认会保留，不清除的话每次计算梯度都会累加
         print("Epoch:%d [%d|%d] loss:%f" % (epoch, idx + 1, len(train_loader), loss.mean()))
 
 

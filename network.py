@@ -7,8 +7,9 @@ import torch.nn.functional as F
 class Net(nn.Module):  # 新建一个网络类，就是需要搭建的网络，必须继承 PyTorch 的 nn.Module 父类
     def __init__(self):  # 构造函数，用于设定网络层
         super().__init__()  # 标准语句
-        self.conv1 = torch.nn.Conv2d(3, 16, (3, 3), padding=1)  # 第一个卷积层，输入通道数3，输出通道数16，卷积核大小3×3，padding 大小1，其他参数默认
-        self.conv2 = torch.nn.Conv2d(16, 16, (3, 3), padding=1)  # 第二个卷积层，输入通道数16，输出通道数16，卷积核大小3×3，padding 大小1，其他参数默认
+        self.conv1 = torch.nn.Conv2d(3, 16, (3, 3), padding=(1, 1))  # 第一个卷积层，输入通道数3，输出通道数16，卷积核大小3×3，padding 大小1，其他参数默认
+        self.conv2 = torch.nn.Conv2d(16, 16, (3, 3),
+                                     padding=(1, 1))  # 第二个卷积层，输入通道数16，输出通道数16，卷积核大小3×3，padding 大小1，其他参数默认
 
         self.fc1 = nn.Linear(56 * 56 * 16, 128)  # 第一个全连层，线性连接，输入节点数56×56×16，输出节点数128
         self.fc2 = nn.Linear(128, 64)  # 第二个全连层，线性连接，输入节点数128，输出节点数64

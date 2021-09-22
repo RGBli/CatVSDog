@@ -1,7 +1,7 @@
 import csv
 
 import torchvision.transforms as transforms
-from getdata import CatAndDogDataset
+from get_data import CatAndDogDataset
 from network import Net
 import torch
 import torch.utils.data
@@ -23,7 +23,7 @@ testset = CatAndDogDataset(DATASET_DIR + "/test/", transform_test)
 test_loader = torch.utils.data.DataLoader(testset, )
 model = Net()
 model.to(device)
-model.load_state_dict(torch.load('model/model.pth'))
+model.load_state_dict(torch.load(MODEL_FILE))
 model.eval()
 results = []
 
@@ -36,6 +36,7 @@ def test():
             label = label.numpy().tolist()
             _, predicted = torch.max(out.data, 1)
             predicted = predicted.data.cpu().numpy().tolist()
+            # 第一列是 label，第二列是预测值
             results.extend([[i, ";".join(str(j))] for (i, j) in zip(label, predicted)])
 
         for result in results:
