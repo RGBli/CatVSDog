@@ -1,5 +1,5 @@
 # DogsVsCats
-Kaggle竞赛题猫狗大战 ，用于PyTorch入门
+Kaggle 竞赛题猫狗大战 ，用于 PyTorch 入门
 
 ## 代码运行步骤
 1. 先将代码中各个文件夹路径进行修改
