@@ -1,9 +1,9 @@
-from getdata import DogsVSCatsDataset as CatAndDogDataset
+from getdata import CatAndDogDataset
 from network import Net
+import torch.utils.data
 import torch
 from torch.autograd import Variable
 import torchvision.transforms as transforms
-import torch.nn as nn
 import os
 
 DATASET_DIR = './data'  # 数据集路径
@@ -14,24 +14,24 @@ LR = 0.001
 EPOCH = 10
 IMAGE_SIZE = 224  # 默认输入网络的图片大小
 
-os.environ["CUDA_VISIBLE_DEVICES"] = 0
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 transform_train = transforms.Compose([
     transforms.Resize((256, 256)),
-    transforms.RandomCrop((224, 224)),
+    transforms.RandomCrop((IMAGE_SIZE, IMAGE_SIZE)),
     transforms.RandomHorizontalFlip(),
     transforms.ToTensor(),
     transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
 ])
 
 transform_val = transforms.Compose([
-    transforms.Resize((224, 224)),
+    transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
     transforms.ToTensor(),
     transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
 ])
 
-trainset = CatAndDogDataset(DATASET_DIR + "/train", 0, transform_train)
-valset = CatAndDogDataset(DATASET_DIR + "/val", 1, transform_val)
+trainset = CatAndDogDataset(DATASET_DIR + "/train/", transform_train)
+valset = CatAndDogDataset(DATASET_DIR + "/val/", transform_val)
 train_loader = torch.utils.data.DataLoader(trainset, batch_size=BATCH_SIZE, shuffle=True,
                                            num_workers=WORKERS)  # 用 PyTorch 的 DataLoader 类封装，实现数据集顺序打乱，多线程读取，一次取多个数据等效果
 val_loader = torch.utils.data.DataLoader(valset, batch_size=BATCH_SIZE, shuffle=False,
@@ -39,8 +39,7 @@ val_loader = torch.utils.data.DataLoader(valset, batch_size=BATCH_SIZE, shuffle=
 
 model = Net()  # 实例化一个网络
 model = model.cuda()  # 网络送入 GPU，即采用 GPU 计算，如果没有 GPU 加速，可以去掉".cuda()"
-model = nn.DataParallel(model)
-model.train()  # 网络设定为训练模式，有两种模式可选，.train() 和 .eval()，训练模式和评估模式，区别就是训练模式采用了dropout策略，可以放置网络过拟合
+model.train()  # 网络设定为训练模式，有两种模式可选，.train() 和 .eval()，训练模式和评估模式，区别就是训练模式采用了 dropout 策略，可以放置网络过拟合
 
 optimizer = torch.optim.Adam(model.parameters(), lr=LR)  # 实例化一个优化器，即调整网络参数，优化方式为 adam 方法
 criterion = torch.nn.CrossEntropyLoss()  # 定义 loss 计算方法，cross entropy，交叉熵，可以理解为两者数值越接近其值越小
@@ -75,7 +74,7 @@ def val(epoch):
 
 
 if __name__ == '__main__':
-    for epoch in range(EPOCH):
+    for epoch in range(1, EPOCH + 1):
         train(epoch)
         val(epoch)
     torch.save(model.state_dict(), '{0}/model.pth'.format(MODEL_DIR))  # 训练所有数据后，保存网络的参数
