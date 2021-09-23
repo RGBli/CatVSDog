@@ -4,9 +4,11 @@ import torch.utils.data
 import torch
 from torch.autograd import Variable
 import torchvision.transforms as transforms
+from torch.utils.tensorboard import SummaryWriter
 
 DATASET_DIR = './data'  # 数据集路径
 MODEL_DIR = './model'  # 模型参数保存位置
+LOG_DIR = "./log"
 WORKERS = 10  # PyTorch 读取数据线程数量
 BATCH_SIZE = 16
 LR = 0.001
@@ -14,6 +16,7 @@ EPOCH = 10
 IMAGE_SIZE = 224  # 默认输入网络的图片大小
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")  # 有 GPU 则使用第一块，否则使用 CPU
+summary_writer = SummaryWriter(LOG_DIR)
 
 transform_train = transforms.Compose([
     transforms.Resize((256, 256)),
@@ -56,6 +59,7 @@ def train(epoch):
         loss.backward()  # 误差反向传播，采用求导的方式，计算网络中每个节点参数的梯度，显然梯度越大说明参数设置不合理，需要调整
         optimizer.step()  # 优化采用设定的优化方法对网络中的各个参数进行调整
         optimizer.zero_grad()  # 清除优化器中的梯度以便下一次计算，因为优化器默认会保留，不清除的话每次计算梯度都会累加
+        summary_writer.add_scalar("Train/Loss", loss.item(), epoch)
         print("Epoch:%d [%d|%d] loss:%f" % (epoch, idx + 1, len(train_loader), loss.mean()))
 
 
@@ -70,7 +74,9 @@ def val(epoch):
             _, predicted = torch.max(out.data, 1)
             total += img.size(0)
             correct += predicted.data.eq(label.data).cpu().sum()
-    print("Acc: %f " % ((1.0 * correct.numpy()) / total))
+    acc = (1.0 * correct.numpy()) / total
+    summary_writer.add_scalar("Validation/Acc", acc, epoch)
+    print("Acc: %f " % acc)
 
 
 if __name__ == '__main__':

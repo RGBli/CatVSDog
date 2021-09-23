@@ -1,2 +1,4 @@
 .idea
 .vscode
+model/*.pth
+log/events.*

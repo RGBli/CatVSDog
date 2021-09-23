@@ -1,6 +1,7 @@
 import os
 import shutil
 
+
 def split_dataset(src: str, dst: str, rate: tuple, num: int):
     total_rate = sum(rate)
     train_num = rate[0] / total_rate * num
@@ -17,4 +18,4 @@ def split_dataset(src: str, dst: str, rate: tuple, num: int):
 
 
 if __name__ == "__main__":
-    split_dataset("/Users/keigatsu/Downloads/train/", "data/", (8,1,1), 100)
+    split_dataset("/Users/keigatsu/Downloads/train/", "data/", (8, 1, 1), 100)
