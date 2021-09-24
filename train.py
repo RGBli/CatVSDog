@@ -43,10 +43,11 @@ transform_val = transforms.Compose([
 
 trainset = CatAndDogDataset(DATASET_DIR + "/train/", transform_train)
 valset = CatAndDogDataset(DATASET_DIR + "/val/", transform_val)
+# 用 PyTorch 的 DataLoader 类封装，实现数据集顺序打乱，多线程读取，一次取多个数据等效果
 train_loader = torch.utils.data.DataLoader(trainset, batch_size=BATCH_SIZE, shuffle=True,
-                                           num_workers=WORKERS)  # 用 PyTorch 的 DataLoader 类封装，实现数据集顺序打乱，多线程读取，一次取多个数据等效果
+                                           num_workers=WORKERS)
 val_loader = torch.utils.data.DataLoader(valset, batch_size=BATCH_SIZE, shuffle=False,
-                                         num_workers=WORKERS)  # 用 PyTorch 的 DataLoader 类封装，实现数据集顺序打乱，多线程读取，一次取多个数据等效果
+                                         num_workers=WORKERS)
 
 # 实例化网络
 model = Net()
@@ -66,20 +67,18 @@ def train(epoch):
     # 循环读取封装后的数据集，其实就是调用了数据集中的__getitem__()方法，只是返回数据格式进行了一次封装
     for idx, (img, label) in enumerate(train_loader):
         # 将数据放置在 PyTorch 的 Variable 节点中，并送入 GPU 中作为网络计算起点
-        img, label = Variable(img).to(device), Variable(label).to(
-            device)
+        img, label = Variable(img).to(device), Variable(label).to(device)
         # 计算网络输出值，就是输入网络一个图像数据，输出猫和狗的概率，调用了网络中的 forward() 方法
         out = model(img)
         # 计算损失，也就是网络输出值和实际 label 的差异，显然差异越小说明网络拟合效果越好，此处需要注意的是第二个参数，必须是一个1维 Tensor
-        loss = criterion(out,
-                         label.squeeze())
+        loss = criterion(out, label.squeeze())
         # 误差反向传播，采用求导的方式，计算网络中每个节点参数的梯度，显然梯度越大说明参数设置不合理，需要调整
         loss.backward()
         # 优化采用设定的优化方法对网络中的各个参数进行调整
         optimizer.step()
         # 清除优化器中的梯度以便下一次计算，因为优化器默认会保留，不清除的话每次计算梯度都会累加
         optimizer.zero_grad()
-        summary_writer.add_scalar("Train/Loss", loss.item(), epoch)
+        summary_writer.add_scalar("Train/Loss", loss.item(), (epoch - 1) * len(train_loader) + idx)
         print("Epoch:%d [%d|%d] loss:%f" % (epoch, idx + 1, len(train_loader), loss.mean()))
 
 

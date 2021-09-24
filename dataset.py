@@ -27,9 +27,9 @@ class CatAndDogDataset(data.Dataset):
                 self.labels.append(1)
 
     # 重载 data.Dataset 父类方法，获取数据集中数据内容
-    def __getitem__(self, item):
-        img = Image.open(self.imgs[item])
-        label = self.labels[item]
+    def __getitem__(self, index):
+        img = Image.open(self.imgs[index])
+        label = self.labels[index]
         return self.transform(img), label
 
     def __len__(self):
