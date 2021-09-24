@@ -1,15 +1,16 @@
-import csv
-
 import torchvision.transforms as transforms
-from get_data import CatAndDogDataset
+from dataset import CatAndDogDataset
 from network import Net
 import torch
 import torch.utils.data
 from torch.autograd import Variable
 
-DATASET_DIR = './data'  # 数据集路径
-MODEL_FILE = './model/model.pth'  # 模型保存路径
-IMAGE_SIZE = 224  # 默认输入网络的图片大小
+# 数据集路径
+DATASET_DIR = './data'
+# 模型保存路径
+MODEL_FILE = './model/model.pth'
+# 默认输入网络的图片大小
+IMAGE_SIZE = 224
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
