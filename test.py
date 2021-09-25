@@ -1,12 +1,12 @@
+import torchvision.models
 import torchvision.transforms as transforms
 from dataset import CatAndDogDataset
-from network import Net
 import torch
 import torch.utils.data
 from torch.autograd import Variable
 
 # 数据集路径
-DATASET_DIR = './data'
+DATASET_DIR = 'tinydata'
 # 模型保存路径
 MODEL_FILE = './model/model.pth'
 # 默认输入网络的图片大小
@@ -22,7 +22,7 @@ transform_test = transforms.Compose([
 
 testset = CatAndDogDataset(DATASET_DIR + "/test/", transform_test)
 test_loader = torch.utils.data.DataLoader(testset, )
-model = Net()
+model = torchvision.models.resnet50()
 model.to(device)
 model.load_state_dict(torch.load(MODEL_FILE))
 model.eval()
@@ -30,6 +30,7 @@ results = []
 
 
 def test():
+    correct = 0
     with torch.no_grad():
         for image, label in test_loader:
             image = Variable(image.to(device))
@@ -41,7 +42,11 @@ def test():
             results.extend([[i, ";".join(str(j))] for (i, j) in zip(label, predicted)])
 
         for result in results:
+            if result[0] == result[1]:
+                correct += 1
             print(result)
+
+        print("Acc: ", correct / len(results))
 
 
 if __name__ == '__main__':

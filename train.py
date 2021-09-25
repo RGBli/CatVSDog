@@ -1,5 +1,5 @@
+import torchvision
 from dataset import CatAndDogDataset
-from network import Net
 import torch.utils.data
 import torch
 from torch.autograd import Variable
@@ -7,7 +7,7 @@ import torchvision.transforms as transforms
 from torch.utils.tensorboard import SummaryWriter
 
 # 数据集路径
-DATASET_DIR = './data'
+DATASET_DIR = 'tinydata'
 # 模型参数保存路径
 MODEL_DIR = './model'
 # 日志保存路径
@@ -49,8 +49,9 @@ train_loader = torch.utils.data.DataLoader(trainset, batch_size=BATCH_SIZE, shuf
 val_loader = torch.utils.data.DataLoader(valset, batch_size=BATCH_SIZE, shuffle=False,
                                          num_workers=WORKERS)
 
-# 实例化网络
-model = Net()
+# 使用官方实现的 ResNet50 网络来实例化网络，为了保证性能并没有使用 network.py 中的网络
+# model = Net()
+model = torchvision.models.resnet50()
 model.to(device)
 # 网络设定为训练模式，有两种模式可选，.train() 和 .eval()，训练模式和评估模式，区别就是训练模式采用了 dropout 策略，可以放置网络过拟合
 model.train()
