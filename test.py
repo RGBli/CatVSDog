@@ -42,7 +42,7 @@ def test():
             results.extend([[i, ";".join(str(j))] for (i, j) in zip(label, predicted)])
 
         for result in results:
-            if result[0] == result[1]:
+            if result[0] == int(result[1]):
                 correct += 1
             print(result)
 

@@ -1,10 +1,34 @@
 # DogsVsCats
+---
 Kaggle 竞赛题猫狗大战 ，用于 PyTorch 入门
 
-### 代码运行步骤
-1. 先将代码中各个文件夹路径进行修改
-2. 训练时，运行`train.py`
-3. 测试时，运行`test.py`
+</br>
+
+### 运行步骤
+1）训练
+``` shell
+python3 train.py
+```
+
+2）测试
+```shell
+python3 test.py
+```
+
+3）查看 tensorboard
+```shell
+cd CatVSDog
+tensorboard --logdir=./log
+```
+
+</br>
+
+### 分类效果
+使用代码中的超参数在 Kaggle 的25000张训练集的猫狗分类问题中达到 79.9% 的预测准确率。
+
+如果进一步调参可能会有更好的表现。
+
+</br>
 
 ### 参考文章
 https://github.com/xbliuHNU/DogsVsCats
