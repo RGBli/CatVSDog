@@ -49,38 +49,40 @@ train_loader = torch.utils.data.DataLoader(trainset, batch_size=BATCH_SIZE, shuf
 val_loader = torch.utils.data.DataLoader(valset, batch_size=BATCH_SIZE, shuffle=False,
                                          num_workers=WORKERS)
 
-# 使用官方实现的 ResNet50 网络来实例化网络，为了保证性能并没有使用 network.py 中的网络
+# 使用官方实现的经过预训练的 ResNet101 模型来实例化网络，为了保证性能并没有使用 network.py 中的网络
 # model = Net()
-model = torchvision.models.resnet50()
+model = torchvision.models.resnet101(pretrained=True)
+# 为了使得 ResNet101 能够应用在2分类问题上，添加了一个全连接层
+model.fc = torch.nn.Linear(2048, 2)
 model.to(device)
-# 网络设定为训练模式，有两种模式可选，.train() 和 .eval()，训练模式和评估模式，区别就是训练模式采用了 dropout 策略，可以放置网络过拟合
-model.train()
 
 # 实例化一个优化器，即调整网络参数，优化方式为 adam 方法
 optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 # 定义 scheduler，用于动态修正学习率
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.0001)
 # 定义 loss 计算方法，cross entropy，交叉熵，可以理解为两者数值越接近其值越小
-criterion = torch.nn.CrossEntropyLoss()
+criterion = torch.nn.CrossEntropyLoss().to(device)
 
 
 def train(epoch):
     print('\nEpoch: %d' % epoch)
+    # 网络设定为训练模式，有两种模式可选，.train() 和 .eval()，训练模式和评估模式，区别就是训练模式采用了 dropout 策略，可以放置网络过拟合
+    model.train()
     # 读取数据集中数据进行训练，因为 dataloader 的 batch_size 设置为16，所以每次读取的数据量为16，即 img 包含了16个图像，label 有16个
-    # 循环读取封装后的数据集，其实就是调用了数据集中的__getitem__()方法，只是返回数据格式进行了一次封装
+    # 循环读取封装后的数据集，其实就是调用了数据集中的 __getitem__() 方法，只是返回数据格式进行了一次封装
     for idx, (img, label) in enumerate(train_loader):
         # 将数据放置在 PyTorch 的 Variable 节点中，并送入 GPU 中作为网络计算起点
         img, label = Variable(img).to(device), Variable(label).to(device)
+        # 清除优化器中的梯度以便下一次计算，因为优化器默认会保留，不清除的话每次计算梯度都会累加
+        optimizer.zero_grad()
         # 计算网络输出值，就是输入网络一个图像数据，输出猫和狗的概率，调用了网络中的 forward() 方法
         out = model(img)
-        # 计算损失，也就是网络输出值和实际 label 的差异，显然差异越小说明网络拟合效果越好，此处需要注意的是第二个参数，必须是一个1维 Tensor
-        loss = criterion(out, label.squeeze())
+        # 计算损失，也就是网络输出值和实际 label 的差异，差异越小说明网络拟合效果越好，此处需要注意的是第二个参数，必须是一个1维 Tensor
+        loss = criterion(out, label)
         # 误差反向传播，采用求导的方式，计算网络中每个节点参数的梯度，显然梯度越大说明参数设置不合理，需要调整
         loss.backward()
         # 优化采用设定的优化方法对网络中的各个参数进行调整
         optimizer.step()
-        # 清除优化器中的梯度以便下一次计算，因为优化器默认会保留，不清除的话每次计算梯度都会累加
-        optimizer.zero_grad()
         summary_writer.add_scalar("Train/Loss", loss.item(), (epoch - 1) * len(train_loader) + idx)
         print("Epoch:%d [%d|%d] loss:%f" % (epoch, idx + 1, len(train_loader), loss.mean()))
     # 修正学习率
@@ -89,6 +91,7 @@ def train(epoch):
 
 def val(epoch):
     print("\nValidation Epoch: %d" % epoch)
+    model.eval()
     total = 0
     correct = 0
     with torch.no_grad():
