@@ -3,7 +3,7 @@ import torch.utils.data as data
 from PIL import Image
 
 
-# 新建一个数据集类，并且需要继承 PyTorch 中的 tinydata.Dataset 父类
+# 新建一个数据集类，并且需要继承 PyTorch 中的 data.Dataset 父类
 class CatAndDogDataset(data.Dataset):
     # 默认构造方法，传入数据集类别（训练或测试），以及数据集路径
     def __init__(self, dir, transform):
@@ -26,7 +26,7 @@ class CatAndDogDataset(data.Dataset):
             else:
                 self.labels.append(1)
 
-    # 重载 tinydata.Dataset 父类方法，获取数据集中数据内容
+    # 重载 data.Dataset 父类方法，获取数据集中数据内容
     def __getitem__(self, index):
         img = Image.open(self.imgs[index])
         label = self.labels[index]

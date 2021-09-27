@@ -7,7 +7,7 @@ import torchvision.transforms as transforms
 from torch.utils.tensorboard import SummaryWriter
 
 # 数据集路径
-DATASET_DIR = 'data'
+DATASET_DIR = './data'
 # 模型参数保存路径
 MODEL_DIR = './model'
 # 日志保存路径
