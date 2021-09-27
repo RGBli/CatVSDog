@@ -6,7 +6,7 @@ import torch.utils.data
 from torch.autograd import Variable
 
 # 数据集路径
-DATASET_DIR = 'tinydata'
+DATASET_DIR = 'data'
 # 模型保存路径
 MODEL_FILE = './model/model.pth'
 # 默认输入网络的图片大小

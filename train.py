@@ -7,7 +7,7 @@ import torchvision.transforms as transforms
 from torch.utils.tensorboard import SummaryWriter
 
 # 数据集路径
-DATASET_DIR = 'tinydata'
+DATASET_DIR = 'data'
 # 模型参数保存路径
 MODEL_DIR = './model'
 # 日志保存路径
@@ -58,6 +58,8 @@ model.train()
 
 # 实例化一个优化器，即调整网络参数，优化方式为 adam 方法
 optimizer = torch.optim.Adam(model.parameters(), lr=LR)
+# 定义 scheduler，用于动态修正学习率
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.0001)
 # 定义 loss 计算方法，cross entropy，交叉熵，可以理解为两者数值越接近其值越小
 criterion = torch.nn.CrossEntropyLoss()
 
@@ -81,6 +83,8 @@ def train(epoch):
         optimizer.zero_grad()
         summary_writer.add_scalar("Train/Loss", loss.item(), (epoch - 1) * len(train_loader) + idx)
         print("Epoch:%d [%d|%d] loss:%f" % (epoch, idx + 1, len(train_loader), loss.mean()))
+    # 修正学习率
+    scheduler.step()
 
 
 def val(epoch):
@@ -97,11 +101,17 @@ def val(epoch):
     acc = (1.0 * correct.numpy()) / total
     summary_writer.add_scalar("Validation/Acc", acc, epoch)
     print("Acc: %f " % acc)
+    return acc
 
 
 if __name__ == '__main__':
+    max_acc = 0
     for epoch in range(1, EPOCH + 1):
         train(epoch)
-        val(epoch)
-    # 训练所有数据后，保存网络的参数
+        val_acc = val(epoch)
+        # 保存 val_acc 最大的网络参数
+        if val_acc > max_acc:
+            max_acc = val_acc
+            torch.save(model.state_dict(), '{0}/{1}_model.pth'.format(MODEL_DIR, val_acc))
+    # 训练所有数据后，保存最后一轮的网络参数
     torch.save(model.state_dict(), '{0}/model.pth'.format(MODEL_DIR))

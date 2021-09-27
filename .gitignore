@@ -2,4 +2,3 @@
 .vscode
 model/*.pth
 log/events.*
-data
