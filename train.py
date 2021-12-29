@@ -2,23 +2,25 @@ import torchvision
 from dataset import CatAndDogDataset
 import torch.utils.data
 import torch
-from torch.autograd import Variable
 import torchvision.transforms as transforms
 from torch.utils.tensorboard import SummaryWriter
 
 # 数据集路径
-DATASET_DIR = './data'
+DATASET_DIR = 'data/'
 # 模型参数保存路径
-MODEL_DIR = './model'
+MODEL_DIR = 'model/'
 # 日志保存路径
-LOG_DIR = "./log"
-# PyTorch 读取数据线程数量
-WORKERS = 10
+LOG_DIR = "log/"
+# 每批读入的数据数量
 BATCH_SIZE = 16
+# 学习率
 LR = 0.001
+# 训练轮数
 EPOCH = 10
 # 默认输入网络的图片大小
 IMAGE_SIZE = 224
+# 类别数
+N_CLASS = 2
 
 # 有 GPU 则使用第一块，否则使用 CPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -30,6 +32,8 @@ transform_train = transforms.Compose([
     transforms.Resize((256, 256)),
     transforms.RandomCrop((IMAGE_SIZE, IMAGE_SIZE)),
     transforms.RandomHorizontalFlip(),
+    transforms.RandomVerticalFlip(),
+    transforms.RandomRotation(degrees=10),
     transforms.ToTensor(),
     transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
 ])
@@ -45,23 +49,22 @@ trainset = CatAndDogDataset(DATASET_DIR + "/train/", transform_train)
 valset = CatAndDogDataset(DATASET_DIR + "/val/", transform_val)
 # 用 PyTorch 的 DataLoader 类封装，实现数据集顺序打乱，多线程读取，一次取多个数据等效果
 train_loader = torch.utils.data.DataLoader(trainset, batch_size=BATCH_SIZE, shuffle=True,
-                                           num_workers=WORKERS)
+                                           num_workers=4)
 val_loader = torch.utils.data.DataLoader(valset, batch_size=BATCH_SIZE, shuffle=False,
-                                         num_workers=WORKERS)
+                                         num_workers=4)
 
 # 使用官方实现的经过预训练的 ResNet101 模型来实例化网络，为了保证性能并没有使用 network.py 中的网络
-# model = Net()
 model = torchvision.models.resnet101(pretrained=True)
 # 为了使得 ResNet101 能够应用在2分类问题上，添加了一个全连接层
-model.fc = torch.nn.Linear(2048, 2)
+model.fc = torch.nn.Linear(2048, N_CLASS)
 model.to(device)
 
 # 实例化一个优化器，即调整网络参数，优化方式为 adam 方法
 optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 # 定义 scheduler，用于动态修正学习率
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.0001)
-# 定义 loss 计算方法，cross entropy，交叉熵，可以理解为两者数值越接近其值越小
-criterion = torch.nn.CrossEntropyLoss().to(device)
+# 定义 loss 计算方法，crossentropy 交叉熵，会自动实现 softmax，并且在标签不是 one-hot 的情况下会自动转为 one-hot
+criterion = torch.nn.CrossEntropyLoss()
 
 
 def train(epoch):
@@ -72,7 +75,8 @@ def train(epoch):
     # 循环读取封装后的数据集，其实就是调用了数据集中的 __getitem__() 方法，只是返回数据格式进行了一次封装
     for idx, (imgs, labels) in enumerate(train_loader):
         # 将数据放置在 PyTorch 的 Variable 节点中，并送入 GPU 中作为网络计算起点
-        imgs, labels = Variable(imgs).to(device), Variable(labels).to(device)
+        imgs = imgs.to(device)
+        labels = labels.to(device)
         # 清除优化器中的梯度以便下一次计算，因为优化器默认会保留，不清除的话每次计算梯度都会累加
         optimizer.zero_grad()
         # 计算网络输出值，就是输入网络一个图像数据，输出猫和狗的概率，调用了网络中的 forward() 方法
@@ -91,16 +95,18 @@ def train(epoch):
 
 def val(epoch):
     print("\nValidation Epoch: %d" % epoch)
+    # 设定网络为评估模式
     model.eval()
     total = 0
     correct = 0
     with torch.no_grad():
-        for idx, (imgs, labels) in enumerate(val_loader):
-            imgs, labels = Variable(imgs).to(device), Variable(labels).to(device)
-            out = model(imgs)
-            _, predicted = torch.max(out.data, 1)
+        for imgs, labels in val_loader:
+            imgs = imgs.to(device)
+            labels = labels.to(device)
+            output = model(imgs)
+            preds = torch.argmax(output, dim=1)
             total += imgs.size(0)
-            correct += predicted.data.eq(labels.data).cpu().sum()
+            correct += preds.data.eq(labels.data).cpu().sum()
     acc = (1.0 * correct.numpy()) / total
     summary_writer.add_scalar("Validation/Acc", acc, epoch)
     print("Acc: %f " % acc)

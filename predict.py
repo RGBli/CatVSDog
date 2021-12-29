@@ -3,12 +3,11 @@ import torchvision.transforms as transforms
 from dataset import CatAndDogDataset
 import torch
 import torch.utils.data
-from torch.autograd import Variable
 
 # 数据集路径
-DATASET_DIR = './data'
+DATASET_DIR = 'dat'
 # 模型保存路径
-MODEL_FILE = './model/model.pth'
+MODEL_FILE = 'model/model.pth'
 # 默认输入网络的图片大小
 IMAGE_SIZE = 224
 # 测试集的 batch_size
@@ -36,13 +35,13 @@ def test():
     model.eval()
     with torch.no_grad():
         for imgs, labels in test_loader:
-            imgs = Variable(imgs.to(device))
-            out = model(imgs)
+            imgs = imgs.to(device)
+            output = model(imgs)
             labels = labels.numpy().tolist()
-            _, predicted = torch.max(out.data, 1)
-            predicted = predicted.data.cpu().numpy().tolist()
+            preds = torch.argmax(output, dim=1)
+            preds = preds.cpu().numpy().tolist()
             # 第一列是 labels，第二列是预测值
-            results.extend([[i, ";".join(str(j))] for (i, j) in zip(labels, predicted)])
+            results.extend([[i, ";".join(str(j))] for (i, j) in zip(labels, preds)])
 
         for result in results:
             if result[0] == int(result[1]):
