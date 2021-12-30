@@ -5,7 +5,7 @@ import torch
 import torch.utils.data
 
 # 数据集路径
-DATASET_DIR = 'dat'
+DATASET_DIR = 'tinydata/'
 # 模型保存路径
 MODEL_FILE = 'model/model.pth'
 # 默认输入网络的图片大小
@@ -21,7 +21,7 @@ transform_test = transforms.Compose([
     transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
 ])
 
-testset = CatAndDogDataset(DATASET_DIR + "/test/", transform_test)
+testset = CatAndDogDataset(DATASET_DIR + "test/", transform_test)
 test_loader = torch.utils.data.DataLoader(testset, batch_size=BATCH_SIZE)
 model = torchvision.models.resnet101()
 model.fc = torch.nn.Linear(2048, 2)

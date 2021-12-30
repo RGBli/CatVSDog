@@ -13,9 +13,7 @@ class Net(nn.Module):
         # 第一个卷积层，输入通道数3，输出通道数16，卷积核大小3×3，padding 大小1，其他参数默认
         self.conv1 = torch.nn.Conv2d(3, 16, (3, 3), padding=1)
         # 第二个卷积层，输入通道数16，输出通道数16，卷积核大小3×3，padding 大小1，其他参数默认
-        self.conv2 = torch.nn.Conv2d(16, 16, (3, 3),
-                                     padding=1)
-
+        self.conv2 = torch.nn.Conv2d(16, 16, (3, 3), padding=1)
         # 第一个全连层，线性连接，输入节点数56×56×16，输出节点数128
         self.fc1 = nn.Linear(56 * 56 * 16, 128)
         # 第二个全连层，线性连接，输入节点数128，输出节点数64

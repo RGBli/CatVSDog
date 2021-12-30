@@ -4,9 +4,10 @@ import torch.utils.data
 import torch
 import torchvision.transforms as transforms
 from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
 
 # 数据集路径
-DATASET_DIR = 'data/'
+DATASET_DIR = 'tinydata/'
 # 模型参数保存路径
 MODEL_DIR = 'model/'
 # 日志保存路径
@@ -73,7 +74,7 @@ def train(epoch):
     model.train()
     # 读取数据集中数据进行训练，因为 dataloader 的 batch_size 设置为16，所以每次读取的数据量为16，即 imgs 包含了16个图像，labels 有16个
     # 循环读取封装后的数据集，其实就是调用了数据集中的 __getitem__() 方法，只是返回数据格式进行了一次封装
-    for idx, (imgs, labels) in enumerate(train_loader):
+    for idx, (imgs, labels) in enumerate(tqdm(train_loader)):
         # 将数据放置在 PyTorch 的 Variable 节点中，并送入 GPU 中作为网络计算起点
         imgs = imgs.to(device)
         labels = labels.to(device)
@@ -100,7 +101,7 @@ def val(epoch):
     total = 0
     correct = 0
     with torch.no_grad():
-        for imgs, labels in val_loader:
+        for imgs, labels in tqdm(val_loader):
             imgs = imgs.to(device)
             labels = labels.to(device)
             output = model(imgs)
@@ -109,7 +110,7 @@ def val(epoch):
             correct += preds.data.eq(labels.data).cpu().sum()
     acc = (1.0 * correct.numpy()) / total
     summary_writer.add_scalar("Validation/Acc", acc, epoch)
-    print("Acc: %f " % acc)
+    print("Epoch:%d acc: %f " % (epoch, acc))
     return acc
 
 
