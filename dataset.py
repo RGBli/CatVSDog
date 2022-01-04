@@ -1,10 +1,11 @@
 import os
-import torch.utils.data as data
+import torch
+from torch.utils.data import Dataset
 from PIL import Image
 
 
 # 新建一个数据集类，并且需要继承 PyTorch 中的 tinydata.Dataset 父类
-class CatAndDogDataset(data.Dataset):
+class CatAndDogDataset(Dataset):
     # 默认构造方法，传入数据集类别（训练或测试），以及数据集路径
     def __init__(self, dir, transform):
         self.transform = transform
@@ -26,11 +27,17 @@ class CatAndDogDataset(data.Dataset):
             else:
                 self.labels.append(1)
 
-    # 重载 tinydata.Dataset 父类方法，获取数据集中数据内容
+    # 重写 Dataset 父类方法，获取数据集中数据内容
     def __getitem__(self, index):
         img = Image.open(self.imgs[index])
         label = self.labels[index]
-        return self.transform(img), label
+        return self.transform(img), self.one_hot(label, 2)
 
+    # 重写 Dataset 父类方法，获取数据数量
     def __len__(self):
         return len(self.imgs)
+
+    # 将标签转为 one-hot 形式
+    @staticmethod
+    def one_hot(label, n_class=2):
+        return torch.nn.functional.one_hot(torch.tensor(label), n_class)

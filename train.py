@@ -6,6 +6,8 @@ import torchvision.transforms as transforms
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
+from loss import SmoothedBCEWithLogitsLoss
+
 # 数据集路径
 DATASET_DIR = 'tinydata/'
 # 模型参数保存路径
@@ -17,7 +19,7 @@ BATCH_SIZE = 16
 # 学习率
 LR = 0.001
 # 训练轮数
-EPOCH = 10
+EPOCH = 30
 # 默认输入网络的图片大小
 IMAGE_SIZE = 224
 # 类别数
@@ -25,7 +27,7 @@ N_CLASS = 2
 
 # 有 GPU 则使用第一块，否则使用 CPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-# 创建 tensorboard writer 实例
+# 创建 tensorboard writer 实例，用于记录训练曲线
 summary_writer = SummaryWriter(LOG_DIR)
 
 # 定义训练集的变换
@@ -62,10 +64,10 @@ model.to(device)
 
 # 实例化一个优化器，即调整网络参数，优化方式为 adam 方法
 optimizer = torch.optim.Adam(model.parameters(), lr=LR)
-# 定义 scheduler，用于动态修正学习率
-scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.0001)
-# 定义 loss 计算方法，crossentropy 交叉熵，会自动实现 softmax，并且在标签不是 one-hot 的情况下会自动转为 one-hot
-criterion = torch.nn.CrossEntropyLoss()
+# 定义 scheduler，用于动态修正学习率，每训练10轮学习率降为之前的1/2
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
+# 定义 loss 计算方法
+criterion = SmoothedBCEWithLogitsLoss()
 
 
 def train(epoch):
@@ -86,7 +88,7 @@ def train(epoch):
         loss = criterion(out, labels)
         # 误差反向传播，采用求导的方式，计算网络中每个节点参数的梯度，显然梯度越大说明参数设置不合理，需要调整
         loss.backward()
-        # 优化采用设定的优化方法对网络中的各个参数进行调整
+        # 采用设定的优化方法对模型中的各个参数进行调整
         optimizer.step()
         summary_writer.add_scalar("Train/Loss", loss.item(), (epoch - 1) * len(train_loader) + idx)
         print("Epoch:%d [%d|%d] loss:%f" % (epoch, idx + 1, len(train_loader), loss.item()))
