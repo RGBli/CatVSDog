@@ -46,8 +46,8 @@ transform_val = transforms.Compose([
     transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
 ])
 
-trainset = CatAndDogDataset(DATASET_DIR + "/train/", transform_train)
-valset = CatAndDogDataset(DATASET_DIR + "/val/", transform_val)
+trainset = CatAndDogDataset(DATASET_DIR + "train/", transform_train)
+valset = CatAndDogDataset(DATASET_DIR + "val/", transform_val)
 # 用 PyTorch 的 DataLoader 类封装，实现数据集顺序打乱，多线程读取，一次取多个数据等效果
 train_loader = torch.utils.data.DataLoader(trainset, batch_size=BATCH_SIZE, shuffle=True,
                                            num_workers=4)
