@@ -18,15 +18,15 @@ python3 test.py
 3）查看 tensorboard
 ```shell
 cd CatVSDog
-tensorboard --logdir=./log
+tensorboard --logdir=log
 ```
 
 </br>
 
 ### 分类效果
-使用代码中的超参数在 Kaggle 的25000张训练集的猫狗分类问题中达到 84.7% 的预测准确率。
+使用代码中的超参数在 Kaggle 的25000张训练集的猫狗分类问题中达到 86.3% 的预测准确率。
 
-如果进一步调参可能会有更好的表现。
+如果进一步调参相信会有更好的表现。
 
 </br>
 
