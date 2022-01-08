@@ -91,7 +91,6 @@ def train(epoch):
         # 采用设定的优化方法对模型中的各个参数进行调整
         optimizer.step()
         summary_writer.add_scalar("Train/Loss", loss.item(), (epoch - 1) * len(train_loader) + idx)
-        print("Epoch:%d [%d|%d] loss:%f" % (epoch, idx + 1, len(train_loader), loss.item()))
     # 修正学习率
     scheduler.step()
 
@@ -106,6 +105,7 @@ def val(epoch):
         for imgs, labels in tqdm(val_loader):
             imgs = imgs.to(device)
             labels = labels.to(device)
+            labels = torch.argmax(labels, dim=1)
             output = model(imgs)
             preds = torch.argmax(output, dim=1)
             total += imgs.size(0)

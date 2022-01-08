@@ -40,4 +40,4 @@ class CatAndDogDataset(Dataset):
     # 将标签转为 one-hot 形式
     @staticmethod
     def one_hot(label, n_class=2):
-        return torch.nn.functional.one_hot(torch.tensor(label), n_class)
+        return torch.nn.functional.one_hot(torch.tensor(label), n_class).float()
