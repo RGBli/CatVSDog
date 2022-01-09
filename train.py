@@ -11,7 +11,7 @@ from loss import SmoothedBCEWithLogitsLoss
 # 数据集路径
 DATASET_DIR = 'tinydata/'
 # 模型参数保存路径
-MODEL_DIR = 'model/'
+MODEL_DIR = 'weight/'
 # 日志保存路径
 LOG_DIR = "log/"
 # 每批读入的数据数量
@@ -114,7 +114,6 @@ def val(epoch):
     summary_writer.add_scalar("Validation/Acc", acc, epoch)
     print("Epoch:%d acc: %f " % (epoch, acc))
     return acc
-
 
 if __name__ == '__main__':
     max_acc = 0

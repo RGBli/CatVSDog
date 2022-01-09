@@ -7,7 +7,7 @@ import torch.utils.data
 # 数据集路径
 DATASET_DIR = 'tinydata/'
 # 模型保存路径
-MODEL_FILE = 'model/model.pth'
+MODEL_FILE = 'weight/model.pth'
 # 默认输入网络的图片大小
 IMAGE_SIZE = 224
 # 测试集的 batch_size
