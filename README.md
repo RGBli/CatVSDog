@@ -24,11 +24,12 @@ tensorboard --logdir=log
 </br>
 
 ### 分类效果
-使用代码中的超参数在 Kaggle 的25000张训练集的猫狗分类问题中达到 97.2% 的预测准确率。
+使用代码中的超参数在 Kaggle 的训练集训练出的猫狗分类模型在测试集中达到 97.2% 的预测准确率，如果进一步调参相信会有更好的表现。
 
-如果进一步调参相信会有更好的表现。
+数据集链接：https://www.kaggle.com/c/dogs-vs-cats-redux-kernels-edition/data
 
 </br>
+
 
 ### 参考文章
 https://github.com/xbliuHNU/DogsVsCats
