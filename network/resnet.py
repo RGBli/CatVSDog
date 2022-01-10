@@ -7,6 +7,12 @@ __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
            'resnet152']
 
 
+'''
+reference https://github.com/aaron-xichen/pytorch-playground/blob/master/imagenet/resnet.py
+https://blog.csdn.net/jiangpeng59/article/details/79609392
+'''
+
+
 def conv3x3(in_planes, out_planes, stride=1):
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)
 
