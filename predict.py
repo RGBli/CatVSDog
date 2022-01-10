@@ -3,11 +3,12 @@ import torchvision.transforms as transforms
 from dataset import CatAndDogDataset
 import torch
 import torch.utils.data
+from tqdm import tqdm
 
 # 数据集路径
 DATASET_DIR = 'tinydata/'
 # 模型保存路径
-MODEL_FILE = 'model/model.pth'
+MODEL_FILE = 'weight/0.97_model.pth'
 # 默认输入网络的图片大小
 IMAGE_SIZE = 224
 # 测试集的 batch_size
@@ -26,7 +27,7 @@ test_loader = torch.utils.data.DataLoader(testset, batch_size=BATCH_SIZE)
 model = torchvision.models.resnet101()
 model.fc = torch.nn.Linear(2048, 2)
 model.to(device)
-model.load_state_dict(torch.load(MODEL_FILE))
+model.load_state_dict(torch.load(MODEL_FILE, map_location='cpu'))
 
 
 def test():
@@ -34,10 +35,12 @@ def test():
     results = []
     model.eval()
     with torch.no_grad():
-        for imgs, labels in test_loader:
+        for i, (imgs, labels) in enumerate(tqdm(test_loader)):
             imgs = imgs.to(device)
+            labels = labels.to(device)
+            labels = torch.argmax(labels, dim=1)
             output = model(imgs)
-            labels = labels.numpy().tolist()
+            labels = labels.cpu().numpy().tolist()
             preds = torch.argmax(output, dim=1)
             preds = preds.cpu().numpy().tolist()
             # 第一列是 labels，第二列是预测值

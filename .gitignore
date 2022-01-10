@@ -1,4 +1,4 @@
 .idea
 .vscode
-model/*.pth
+weight/*.pth
 log/events.*

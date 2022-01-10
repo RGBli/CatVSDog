@@ -11,7 +11,7 @@ from loss import SmoothedBCEWithLogitsLoss
 # 数据集路径
 DATASET_DIR = 'tinydata/'
 # 模型参数保存路径
-MODEL_DIR = 'model/'
+MODEL_DIR = 'weight/'
 # 日志保存路径
 LOG_DIR = "log/"
 # 每批读入的数据数量
@@ -35,7 +35,6 @@ transform_train = transforms.Compose([
     transforms.Resize((256, 256)),
     transforms.RandomCrop((IMAGE_SIZE, IMAGE_SIZE)),
     transforms.RandomHorizontalFlip(),
-    transforms.RandomVerticalFlip(),
     transforms.RandomRotation(degrees=10),
     transforms.ToTensor(),
     transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
@@ -126,4 +125,4 @@ if __name__ == '__main__':
             max_acc = val_acc
             torch.save(model.state_dict(), '{0}/{1}_model.pth'.format(MODEL_DIR, val_acc))
     # 训练所有数据后，保存最后一轮的网络参数
-    torch.save(model.state_dict(), '{0}/model.pth'.format(MODEL_DIR))
+    torch.save(model.state_dict(), '{0}/weight.pth'.format(MODEL_DIR))
