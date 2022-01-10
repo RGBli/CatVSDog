@@ -11,12 +11,13 @@ reference https://github.com/chengyangfu/pytorch-vgg-cifar10/blob/master/vgg.py
 https://github.com/minar09/VGG16-PyTorch/blob/master/vgg.py
 '''
 
+
 class VGG(nn.Module):
     def __init__(self, features, n_class=2):
         super().__init__()
         self.features = features
         self.classifier = nn.Sequential(
-            nn.Linear(512*7*7, 4096),
+            nn.Linear(512 * 7 * 7, 4096),
             nn.ReLU(True),
             nn.Dropout(),
             nn.Linear(4096, 4096),
@@ -26,7 +27,7 @@ class VGG(nn.Module):
         )
 
         # Initialize weights
-    
+
     def _init_weight(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -43,12 +44,12 @@ class VGG(nn.Module):
 
     def forward(self, x):
         x = self.features(x)
-        x = x.view(x.size(0), 512*7*7)
+        x = x.view(x.size(0), 512 * 7 * 7)
         x = self.classifier(x)
         return x
 
 
-def make_layer(cfg, type = 'E', batch_norm=False):
+def make_layer(cfg, type='E', batch_norm=False):
     cfg = cfg[type]
     layers = []
     in_channels = 3
@@ -74,7 +75,7 @@ cfg = {
     'B': [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
     'C': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'],
     'D': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'],
-    'E': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 
+    'E': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M',
           512, 512, 512, 512, 'M'],
 }
 
