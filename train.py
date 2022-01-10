@@ -114,6 +114,7 @@ def val(epoch):
     print("Epoch:%d acc: %f " % (epoch, acc))
     return acc
 
+
 if __name__ == '__main__':
     max_acc = 0
     for epoch in range(1, EPOCH + 1):

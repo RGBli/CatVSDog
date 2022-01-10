@@ -27,7 +27,7 @@ test_loader = torch.utils.data.DataLoader(testset, batch_size=BATCH_SIZE)
 model = torchvision.models.resnet101()
 model.fc = torch.nn.Linear(2048, 2)
 model.to(device)
-model.load_state_dict(torch.load(MODEL_FILE, map_location='cpu'))
+model.load_state_dict(torch.load(MODEL_FILE))
 
 
 def test():
