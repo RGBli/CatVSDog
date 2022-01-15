@@ -4,6 +4,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+'''
+reference https://github.com/andreasveit/densenet-pytorch/blob/master/densenet.py
+https://github.com/bamos/densenet.pytorch/blob/master/densenet.py
+https://blog.csdn.net/u014380165/article/details/75142664
+https://blog.csdn.net/weixin_41798111/article/details/86494353
+'''
+
 class BasicBlock(nn.Module):
     def __init__(self, in_planes, out_planes):
         super().__init__()
@@ -49,30 +56,27 @@ class TransitionBlock(nn.Module):
 
 
 class DenseBlock(nn.Module):
-    def __init__(self, nb_layers, in_planes, growth_rate, block):
+    def __init__(self, base_blocks, in_planes, growth_rate, block):
         super().__init__()
-        self.layer = self._make_layer(
-            block, in_planes, growth_rate, nb_layers)
+        self.layer = self._make_layer(block, in_planes, growth_rate, base_blocks)
 
-    def _make_layer(self, block, in_planes, growth_rate, nb_layers):
+    def _make_layer(self, block, in_planes, growth_rate, base_blocks):
         layers = []
-        for i in range(nb_layers):
-            layers.append(
-                block(in_planes + i * growth_rate, growth_rate))
+        for i in range(base_blocks):
+            layers.append(block(in_planes + i * growth_rate, growth_rate))
         return nn.Sequential(*layers)
 
     def forward(self, x):
         return self.layer(x)
 
 
-class DenseNet(nn.Module):
-    def __init__(self, depth, n_class, growth_rate=12,
-                 reduction=0.5, bottleneck=True):
+class DenseNetBC(nn.Module):
+    def __init__(self, depth, n_class, growth_rate=12, reduction=0.5, bottleneck=True):
         super().__init__()
         in_planes = 2 * growth_rate
-        n = (depth - 4) // 3
+        base_blocks = (depth - 4) // 3
         if bottleneck == True:
-            n //= 2
+            base_blocks //= 2
             block = BottleneckBlock
         else:
             block = BasicBlock
@@ -80,33 +84,33 @@ class DenseNet(nn.Module):
         # 1st conv before any dense block
         self.conv1 = nn.Conv2d(3, in_planes, kernel_size=3, stride=1,
                                padding=1, bias=False)
+
         # 1st block
-        self.block1 = DenseBlock(n, in_planes, growth_rate, block)
-        in_planes = int(in_planes + n * growth_rate)
-        self.trans1 = TransitionBlock(in_planes, int(
-            math.floor(in_planes * reduction)))
-        in_planes = int(math.floor(in_planes * reduction))
+        self.block1 = DenseBlock(base_blocks, in_planes, growth_rate, block)
+        in_planes = int(in_planes + base_blocks * growth_rate)
+        self.trans1 = TransitionBlock(in_planes, int(math.floor(in_planes * reduction)))
+        in_planes = math.floor(in_planes * reduction)
 
         # 2nd block
-        self.block2 = DenseBlock(n, in_planes, growth_rate, block)
-        in_planes = int(in_planes + n * growth_rate)
+        self.block2 = DenseBlock(base_blocks, in_planes, growth_rate, block)
+        in_planes = int(in_planes + base_blocks * growth_rate)
         self.trans2 = TransitionBlock(in_planes, int(
             math.floor(in_planes * reduction)))
-        in_planes = int(math.floor(in_planes * reduction))
+        in_planes = math.floor(in_planes * reduction)
 
         # 3rd block
-        self.block3 = DenseBlock(n, in_planes, growth_rate, block)
-        in_planes = int(in_planes + n * growth_rate)
+        self.block3 = DenseBlock(base_blocks, in_planes, growth_rate, block)
+        in_planes = int(in_planes + base_blocks * growth_rate)
+
         # global average pooling and classifier
-        self.bn1 = nn.BatchNorm2d(in_planes)
+        self.bn = nn.BatchNorm2d(in_planes)
         self.relu = nn.ReLU(inplace=True)
-        self.fc = nn.Linear(in_planes, n_class)
-        self.in_planes = in_planes
+        self.fc = nn.Linear(132*50*50, n_class)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
+                base_blocks = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                m.weight.data.normal_(0, math.sqrt(2. / base_blocks))
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
@@ -118,14 +122,15 @@ class DenseNet(nn.Module):
         out = self.trans1(self.block1(out))
         out = self.trans2(self.block2(out))
         out = self.block3(out)
-        out = self.relu(self.bn1(out))
-        out = F.avg_pool2d(out, 8)
-        out = out.view(-1, self.in_planes)
+        out = self.relu(self.bn(out))
+        out = F.avg_pool2d(out, kernel_size=7, stride=1)
+        # print(out.size())
+        out = out.view(-1, 132*50*50)
         return self.fc(out)
 
 
 if __name__ == '__main__':
     input = torch.rand(size=(4, 3, 224, 224))
-    model = DenseNet(depth=40, n_class=2)
+    model = DenseNetBC(depth=40, n_class=2)
     output = model(input)
     print(output.size())

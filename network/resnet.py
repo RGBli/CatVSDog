@@ -77,7 +77,7 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, block, layers, num_classes=2):
+    def __init__(self, block, layers, n_class=2):
         self.inplanes = 64
         super().__init__()
 
@@ -95,9 +95,9 @@ class ResNet(nn.Module):
 
         self.avgpool = nn.Sequential(nn.AvgPool2d(7))
 
-        self.group2 = nn.Sequential(
+        self.classifier = nn.Sequential(
             OrderedDict([
-                ('fc', nn.Linear(512 * block.expansion, num_classes))
+                ('fc', nn.Linear(512 * block.expansion, n_class))
             ])
         )
 
@@ -138,7 +138,7 @@ class ResNet(nn.Module):
 
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
-        x = self.group2(x)
+        x = self.classifier(x)
         return x
 
 
